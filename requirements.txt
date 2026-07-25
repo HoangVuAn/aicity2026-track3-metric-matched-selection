@@ -1,0 +1,38 @@
+# Reproduction environment for the shipped pipeline (data prep + training + inference).
+# Tested with Python 3.13 and CUDA 12.8. A single virtual env runs the whole end-to-end
+# (serve the models with vLLM, select open-ended answers with BERTScore, render box-cue
+# frames with YOLO). Install torch from the matching CUDA index first, then the rest:
+#
+#   pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu128
+#   pip install -r requirements.txt
+
+# --- core model + serving ---
+torch==2.10.0
+transformers==5.10.1
+accelerate==1.13.0
+peft==0.19.1
+vllm==0.19.1
+
+# NVIDIA Cosmos3 support (registers Cosmos3ForConditionalGeneration; serves Cosmos3-Super).
+# Both come from one pinned commit of the NVIDIA cosmos-framework monorepo.
+transformers-cosmos3 @ git+https://github.com/NVIDIA/cosmos-framework.git@003d66d4b014243347eecf558d65f841d5d86f8a#subdirectory=packages/transformers-cosmos3
+vllm-cosmos3 @ git+https://github.com/NVIDIA/cosmos-framework.git@003d66d4b014243347eecf558d65f841d5d86f8a#subdirectory=packages/vllm-cosmos3
+
+# --- API client (talks to the vLLM-served models and the text judge) ---
+openai==2.41.0
+
+# --- open-ended answer selection: MBR over BERTScore-F1 (the official metric) ---
+bert-score==0.3.13
+
+# --- video frame extraction + box-cue detector ---
+opencv-python-headless==4.13.0.92
+pillow==12.2.0
+numpy==2.2.6
+decord==0.6.0
+av==17.0.1
+ultralytics==8.4.70
+
+# --- config parsing + training telemetry ---
+PyYAML==6.0.3
+deepspeed==0.19.1
+wandb==0.27.1

@@ -1,0 +1,47 @@
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.ipynb_checkpoints/
+
+# ── Secrets / local env (never commit) ──
+.env
+*.env
+*.pem
+*.key
+secrets*
+credentials*
+
+# ── Data, checkpoints, generated artifacts (re-created by the pipeline) ──
+dataset/
+checkpoints/
+hf_cache/
+*.safetensors
+*.bin
+*.pt
+*.csv          # submissions / intermediate CSVs are generated, not shipped
+inference/full_run/
+inference/full_out/
+training/qwen_sft/val_run/
+
+# ── LaTeX build artifacts (keep main.tex, refs.bib, main.pdf; drop intermediates) ──
+docs/paper/*.aux
+docs/paper/*.bbl
+docs/paper/*.blg
+docs/paper/*.log
+docs/paper/*.out
+docs/paper/*.synctex.gz
+docs/paper/*.fls
+docs/paper/*.fdb_latexmk
+
+# ── Logs ──
+*.log
+*.out
+
+# ── Internal planning docs (not for public repo) ──
+docs/PAPER_OUTLINE.md
+docs/paper/EXPERIMENTS_val_plan.md
+
+# ── Paper sources (submitted separately, not part of the public code release) ──
+docs/

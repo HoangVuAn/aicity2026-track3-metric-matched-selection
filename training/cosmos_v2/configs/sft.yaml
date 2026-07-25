@@ -1,0 +1,15 @@
+# Cosmos3-Super SFT — the v2 recipe (test 0.5559, best SFT). DeepSpeed ZeRO-3, LoRA r64.
+# Launch: GPUS=0,3,4,5,6,7 bash training/cosmos_v2/train_sft.sh --config training/cosmos_v2/configs/sft.yaml --deepspeed
+# (train_sft.sh uses --fsdp; pass --deepspeed here to use ZeRO-3 instead.)
+tasks: all
+tiers: S,A
+n-frames: 32
+sampling: smart
+max-steps: 4000          # best checkpoint was checkpoint-3800
+grad-accum: 8
+lr: 1.0e-4
+cot: true
+logging-steps: 10
+save-steps: 200
+output-dir: checkpoints/cosmos_sft
+run-name: cosmos_sft

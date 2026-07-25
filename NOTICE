@@ -1,0 +1,17 @@
+This repository (code) is released under the MIT License (see LICENSE).
+
+It orchestrates third-party models and datasets that carry their OWN licenses,
+which govern their use and are NOT relicensed by this repository:
+
+Models
+  - nvidia/Cosmos3-Super (cosmos_v2, cosmos-base) ... NVIDIA OpenMDW-1.1
+  - Qwen3-VL family / Qwen3.6-27B (f1, box-cue)   ... Apache-2.0 (per model card)
+  - Qwen/Qwen3-30B-A3B-Instruct-2507 (judge)      ... Apache-2.0 (per model card)
+  - YOLO26x (box-cue detector overlay)            ... Ultralytics AGPL-3.0
+
+Data
+  - AI City Challenge 2026 Track 3 split, and its public source collections
+    (SoTAD, TAD/TAD-Bench, UCF-Crimes, HTV, Barbados, Accident-Bench), plus the
+    external Vad-Reasoning (Vad-R1) set. See each dataset's original license/terms.
+
+Users must obtain the models and data separately and comply with their licenses.

@@ -1,0 +1,26 @@
+# ── Generated data & artifacts (re-created by running the pipeline; never committed) ──
+full_run/            # all generated candidate pools (votes / richpool / grounding), pred_f1, serve logs
+full_out/            # legacy mode-A output
+*.log
+*.csv                # submissions / intermediate CSVs live under dataset/, not in the repo
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+
+# ── Session analysis / ad-hoc experiments (NOT part of the reproduction pipeline) ──
+# These were used to audit the method (leak/pair-repair decomposition); kept locally, not shipped.
+audit_*.py
+pair_orient.py
+prune_sweep.py
+stage_fix2.sh
+stage_leakonly.sh
+
+# ── Superseded orchestrators — run_full_fast.sh is the canonical, self-contained one ──
+run_faithful.sh                 # still calls training/qwen_sft/*.sh
+# Split-stage scripts: run_full_fast.sh now does grounding + judge + final INLINE, so these
+# standalone stages are redundant (and still hardcode specific GPU indices). Kept locally, not shipped.
+stage_grounding.sh
+stage_grounding2.sh
+stage_final.sh

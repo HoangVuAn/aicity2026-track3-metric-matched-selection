@@ -1,0 +1,74 @@
+# Data prep configuration — paths, thresholds, heuristic params.
+paths:
+  raw_train_dir: dataset/train/train
+  output_dir: dataset/processed
+  cache_dir: dataset/processed/.cache
+
+tasks:
+  - bcq
+  - bcq_openended
+  - causal_linkage
+  - mcq
+  - mcq_openended
+  - open_qa
+  - scene_description
+  - temporal_description
+  - temporal_localization
+  - video_summarization
+
+tier:
+  # Tier S target ~910 videos (NVIDIA-primed gold-context). Heuristic thresholds
+  # tuned so top ~25% percentile of S-score lands as Tier S.
+  s_score_percentile: 75
+  # Tier A target ~1800 videos (consistent but pseudo-label). Next ~50%.
+  a_score_percentile: 25
+  weights:
+    S: 3.0
+    A: 2.0
+    B: 1.0
+
+  s_heuristic:
+    # Regex/keyword cues correlated with NVIDIA priming output.
+    timestamp_pattern: '\d{1,2}:\d{2}(?:\.\d{1,3})?'
+    spatial_keywords:
+      - left lane
+      - right lane
+      - left side
+      - right side
+      - crosswalk
+      - intersection
+      - sidewalk
+      - shoulder
+      - median
+      - turn lane
+      - opposite lane
+      - oncoming lane
+      - bottom of the frame
+      - top of the frame
+    generic_terms:
+      # If reasoning is dominated by these, it's likely generic Gemma output.
+      - somehow
+      - probably
+      - appears to
+      - seems to
+      - might be
+      - likely
+      - in general
+      - typically
+
+consistency:
+  # Cross-task pairs to compare per-video. Each pair returns 1.0 if consistent,
+  # 0.0 if conflicting, 0.5 if undecidable.
+  pairs:
+    - [bcq, causal_linkage]
+    - [temporal_localization, temporal_description]
+    - [scene_description, video_summarization]
+    - [mcq, causal_linkage]
+  # Videos with mean consistency score below this get init weight halved.
+  conflict_threshold: 0.4
+  conflict_downweight: 0.5
+
+dataset_build:
+  # Stratified validation split per task.
+  val_ratio: 0.05
+  random_seed: 42
