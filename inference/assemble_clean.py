@@ -1,5 +1,5 @@
 """CLEAN assembler (docs/vote_table_clean.md). Uniform 4-model, orphan = paired via synth-sibling with the
-correct per-format model, shared 12/12/12/12 Yes/No stance pool, no f1 double-count. Run in locate_env.
+correct per-format model, shared 12/12/12/12 Yes/No stance pool, no f1 double-count. Run in the reproduction env (requirements.txt).
 
 Consumes (under --dir):
   cosmos_votetta.json     cosmos-base N=12 : bcq closed votes(12), mcq/mcq_oe perm-TTA picks, boe samples
@@ -204,6 +204,7 @@ def main():
 
     with open(a.out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["item_index", "prediction"]); w.writeheader(); w.writerows(rows)
+    os.makedirs(D, exist_ok=True)
     with open(os.path.join(D, "bcq_votepool.json"), "w") as f:
         json.dump(bcq_votepool, f)
     empty = sum(1 for r in rows if not r["prediction"].strip())

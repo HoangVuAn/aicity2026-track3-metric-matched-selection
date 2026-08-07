@@ -16,7 +16,7 @@ import functools
 import cv2
 import numpy as np
 
-CACHE_DIR = "training/data/yolo_boxes"
+CACHE_DIR = os.getenv("YOLO_CACHE_DIR", "training/data/yolo_boxes")
 _BASE = "dataset/train/videos/"
 # arr is RGB (extract_frames does BGR2RGB). Colors in RGB.
 CLS_COLOR = {0: (0, 255, 0), 1: (0, 255, 0),      # person, bicycle -> green (VRU)

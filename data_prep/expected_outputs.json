@@ -1,0 +1,11 @@
+{
+  "training/data/merged_sft.jsonl": {
+    "sha256": "30d55b0f2e8f6f0d9f0c94076e5197df950aece8a971fb939de8e0c57bcf53ca",
+    "records": 44413,
+    "by_source": {"challenge": 41844, "vad": 2569},
+    "by_tier": {"S": 14256, "A": 20881, "B": 9276},
+    "note": "Byte-for-byte deterministic given the official challenge data + Vad-Reasoning-SFT. Without Vad-R1 (--skip-vad) the corpus is the 41,844 challenge records only."
+  },
+  "dataset/processed/train.jsonl": {"records": 41844},
+  "dataset/processed/val.jsonl": {"records": 2196}
+}

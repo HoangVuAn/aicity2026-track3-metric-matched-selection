@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from paths import TRAIN_VIDEO_BASE, TEST_VIDEO_BASE, TEST_JSON  # noqa: E402
 from ultralytics import YOLO  # noqa: E402
 
-WEIGHTS = os.getenv("YOLO_WEIGHTS", "/mnt/data/anhv10/VLM_video_understanding/api_backend/yolo26x.pt")
+WEIGHTS = os.getenv("YOLO_WEIGHTS", "yolo26x.pt")  # ultralytics auto-downloads by name
 CACHE = os.getenv("YOLO_CACHE_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "full_run/yolo_boxes"))
 CLASSES = [0, 1, 2, 3, 5, 7, 9, 11]  # person bicycle car motorcycle bus truck traffic-light stop-sign
 MAX_BOXES = 20        # sanity cap: drop frames that emit an absurd count

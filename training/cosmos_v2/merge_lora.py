@@ -2,8 +2,8 @@
 checkpoint vLLM can serve (fast test inference). Copies the tokenizer/processor/chat-template
 files from the original snapshot so vLLM loads it like the base.
 
-  cosmos3_env/bin/python training/cosmos_v2/merge_lora.py \
-    --adapter checkpoints/cosmos_sft_ds_v2/checkpoint-3800 --out checkpoints/cosmos_sft_merged
+  python training/cosmos_v2/merge_lora.py \
+    --adapter checkpoints/cosmos_sft/checkpoint-3800 --out checkpoints/cosmos_sft_merged
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from peft import PeftModel
 COSMOS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(COSMOS))
 from trainlib.model import load_base
-from trainlib.paths import SNAP
+from trainlib.paths import require_snap
 
 KEEP = {"tokenizer.json", "tokenizer_config.json", "vocab.json", "merges.txt",
         "added_tokens.json", "special_tokens_map.json", "chat_template.json",
@@ -41,7 +41,7 @@ def main() -> None:
     merged.save_pretrained(str(out), safe_serialization=True)
     print("merged weights saved", flush=True)
     for name in KEEP:
-        src = Path(SNAP) / name
+        src = Path(require_snap()) / name
         if src.exists():
             shutil.copy2(src, out / name)
     print(f"tokenizer/processor copied -> {out}", flush=True)

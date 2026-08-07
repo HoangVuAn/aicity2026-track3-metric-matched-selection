@@ -1,5 +1,5 @@
 """Merge a Qwen3.6-27B LoRA adapter into the base and save a standalone checkpoint vLLM can serve.
-  CUDA_VISIBLE_DEVICES=3 cosmos3_env/bin/python training/qwen_sft/merge.py <adapter> <out>"""
+  CUDA_VISIBLE_DEVICES=0 python training/qwen_sft/merge.py <adapter> <out>"""
 import sys
 import warnings
 

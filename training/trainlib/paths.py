@@ -13,12 +13,19 @@ TRAIN = REPO / "training"
 DATA = TRAIN / "data"
 LOGS = TRAIN / "logs"
 
-# Cosmos3-Super reasoner snapshot (33.5B). Default is this machine's HF cache path.
-SNAP = os.getenv(
-    "COSMOS_SNAP",
-    "/mnt/data/anhv10/hf_cache/hub/models--nvidia--Cosmos3-Super/snapshots/"
-    "3965ceeee07a23751d4f5625c6bee0635d24ecd2",
-)
+# Cosmos3-Super reasoner snapshot (33.5B): your HF-cache snapshot dir of nvidia/Cosmos3-Super
+# (e.g. $HF_HOME/hub/models--nvidia--Cosmos3-Super/snapshots/<hash>). Set via COSMOS_SNAP.
+SNAP = os.getenv("COSMOS_SNAP", "")
+
+
+def require_snap() -> str:
+    """Checked accessor for Cosmos consumers; qwen training never needs it."""
+    if not SNAP:
+        raise RuntimeError(
+            "Set COSMOS_SNAP to your local nvidia/Cosmos3-Super snapshot directory "
+            "(download once via `huggingface-cli download nvidia/Cosmos3-Super`)."
+        )
+    return SNAP
 
 # Generated datasets
 MERGED_SFT = DATA / "merged_sft.jsonl"

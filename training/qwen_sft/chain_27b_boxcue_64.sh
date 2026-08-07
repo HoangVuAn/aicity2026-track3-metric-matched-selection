@@ -5,6 +5,9 @@
 # 3 GPUs -> eff batch = micro1 x grad-accum10 x 3gpu = 30; keep ~3 GPUs (or scale grad-accum
 # inversely) to hold the same eff batch. Override GPUS for your machine.
 # Prerequisite: the YOLO box cache (training/data/yolo_boxes/) must exist; box_cue.py overlays it.
+# Build it over the train+val videos with the shipped detector pass (weights auto-download
+# via ultralytics; shard with --shard/--nshards for speed):
+#   YOLO_CACHE_DIR=training/data/yolo_boxes YOLO_WEIGHTS=yolo26x.pt python3 inference/detector_pass.py
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 exec > training/qwen_sft/logs/qwen36_bcqmcq_boxcue_64.log 2>&1

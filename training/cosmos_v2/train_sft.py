@@ -3,7 +3,7 @@ naive model-parallel (default), multi-GPU DeepSpeed ZeRO-3 (--deepspeed), multi-
 (--fsdp). Library (model load, frame extraction, batch building) lives in trainlib.
 
   # single process (device_map=auto)
-  HF_HOME=... CUDA_VISIBLE_DEVICES=0,3,4,5,6,7 cosmos3_env/bin/python \
+  HF_HOME=... CUDA_VISIBLE_DEVICES=0,3,4,5,6,7 python \
     training/cosmos_v2/train_sft.py --config training/cosmos_v2/configs/sft.yaml --deepspeed
   # multi-GPU (accelerate): see training/cosmos_v2/train_sft.sh
 """

@@ -14,7 +14,10 @@ secrets*
 credentials*
 
 # ── Data, checkpoints, generated artifacts (re-created by the pipeline) ──
+dataset
 dataset/
+training/data/*.jsonl
+checkpoints
 checkpoints/
 hf_cache/
 *.safetensors
@@ -45,3 +48,5 @@ docs/paper/EXPERIMENTS_val_plan.md
 
 # ── Paper sources (submitted separately, not part of the public code release) ──
 docs/
+training/data/yolo_boxes/
+wandb/

@@ -5,16 +5,16 @@
 # orchestrators (run_full_fast.sh, stage_*.sh). Python scripts read TEST_JSON /
 # VIDEO_DIR via the environment (see paths.py) — those are exported below.
 #
-# To re-run on another machine, override the paths that start with /mnt/data:
+# Every path/binary below is env-overridable; defaults assume the repo root layout:
 #   REPO_DIR, PY, VLLM, LOC, the *_MODEL vars, YOLO_WEIGHTS, HF_HOME.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── repo + python environments / binaries ──
-REPO_DIR="${REPO_DIR:-/mnt/data/anhv10/ai_city_challenge}"
-export HF_HOME="${HF_HOME:-/mnt/data/anhv10/hf_cache}"
-PY="${PY:-/mnt/data/anhv10/cosmos3_env/bin/python}"     # vllm-client env (openai, cv2)
-VLLM="${VLLM:-/mnt/data/anhv10/cosmos3_env/bin/vllm}"   # vllm serve binary
-LOC="${LOC:-/mnt/data/anhv10/locate_env/bin/python}"    # env with bert_score (assembly)
+REPO_DIR="${REPO_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+export HF_HOME="${HF_HOME:-$HOME/.cache/huggingface}"
+PY="${PY:-python3}"                                     # python of the reproduction env (requirements.txt)
+VLLM="${VLLM:-vllm}"                                    # vllm serve binary (same env)
+LOC="${LOC:-$PY}"                                       # bert_score assembly (same env; override if you split)
 
 # ── data I/O (python reads TEST_JSON / VIDEO_DIR via env → paths.py) ──
 export TEST_JSON="${TEST_JSON:-$REPO_DIR/dataset/official_test/test/test.json}"
@@ -28,7 +28,7 @@ COSMOS_BASE_MODEL="${COSMOS_BASE_MODEL:-nvidia/Cosmos3-Super}"                  
 COSMOS_V2_MODEL="${COSMOS_V2_MODEL:-$REPO_DIR/checkpoints/cosmos_sft_merged}"   # Cosmos SFT
 BOXCUE_MODEL="${BOXCUE_MODEL:-$REPO_DIR/checkpoints/qwen36_27b_bcqmcq_boxcue_merged}"  # YOLO-box overlay
 JUDGE_MODEL="${JUDGE_MODEL:-Qwen/Qwen3-30B-A3B-Instruct-2507}"                  # text judge (cross-task consistency)
-export YOLO_WEIGHTS="${YOLO_WEIGHTS:-/mnt/data/anhv10/VLM_video_understanding/api_backend/yolo26x.pt}"
+export YOLO_WEIGHTS="${YOLO_WEIGHTS:-yolo26x.pt}"   # ultralytics auto-downloads by name
 COSMOS_OVERRIDES="${COSMOS_OVERRIDES:-{\"architectures\":[\"Cosmos3ReasonerForConditionalGeneration\"]}}"
 
 # ── vLLM serving params ──

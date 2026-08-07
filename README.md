@@ -34,34 +34,85 @@ release/
 │   │                   chain_27b_f1_128.sh (f1 orchestrator), merge.py
 │   ├── cosmos_v2/      train_sft.py/.sh, merge_lora.py, configs/sft.yaml   (Cosmos3-Super SFT)
 │   └── data/           merged_sft.jsonl  (regenerate via data-prep; see below)
-├── inference/           inference phase -> submission CSV
-└── docs/                method notes
+└── inference/           inference phase -> submission CSV
 ```
 
 ## Reproduce
 
-### 0. Environment (external, not shipped)
-- One Python 3.13 / CUDA 12.8 venv: `pip install -r requirements.txt` (pinned; see its header for the torch install).
-- `HF_HOME` with base models cached: `Qwen/Qwen3.6-27B`, `nvidia/Cosmos3-Super`, `Qwen/Qwen3-30B-A3B-Instruct-2507`.
-- YOLO weights `yolo26x.pt` (for box-cue). Set paths in `inference/config.sh`.
+### 0. Environment (one env runs the whole pipeline; tested with Python 3.13 / CUDA 12.8)
+```bash
+conda create -n aicity python=3.13 -y
+conda activate aicity
+pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu128
+pip install -r requirements.txt
+```
+Download the base models once (~240 GB total: 52 + 128 + 57 GB) and export the cache paths:
+```bash
+export HF_HOME=~/.cache/huggingface        # or wherever you keep the HF cache
+huggingface-cli download Qwen/Qwen3.6-27B
+huggingface-cli download nvidia/Cosmos3-Super
+huggingface-cli download Qwen/Qwen3-30B-A3B-Instruct-2507
+export COSMOS_SNAP=$HF_HOME/hub/models--nvidia--Cosmos3-Super/snapshots/<hash>   # for Cosmos training/merge
+```
+Notes:
+- YOLO weights `yolo26x.pt` (box-cue) are auto-downloaded by `ultralytics` on first use.
+- Every path/binary is env-overridable; defaults live in `inference/config.sh`.
+- Place the official challenge data under `dataset/` (see "Not shipped" below).
 
 ### 1. Data prep  (raw challenge JSONs -> training corpus)
-`data_prep/prep/` turns the 10 raw task JSONs into the tier-tagged training corpus
-`training/data/merged_sft.jsonl` (S/A/B tier classification + cross-task consistency + dataset build;
-the reasoning field is kept as flat text and wrapped as `<think>...</think>` at training time). Frame
-extraction is done on-the-fly inside training (`training/trainlib/data.py`). Thresholds and paths live in
+```bash
+python3 data_prep/build_corpus.py        # -> training/data/merged_sft.jsonl (44,413 records)
+sha256sum training/data/merged_sft.jsonl # must match data_prep/expected_outputs.json
+```
+The build is byte-for-byte deterministic; `data_prep/expected_outputs.json` holds the reference
+sha256 and record counts so you can verify your corpus is identical to the one we trained on.
+(The corpus itself is not shipped: it is derived from the challenge annotations, which we may
+not redistribute.)
+Turns the 10 raw task JSONs (place the official data under `dataset/train/`) into the tier-tagged
+training corpus (S/A/B tier classification + cross-task consistency + dataset build; the reasoning
+field is kept as flat text and wrapped as `<think>...</think>` at training time). Frame extraction is
+done on-the-fly inside training (`training/trainlib/data.py`). Thresholds and paths live in
 `data_prep/config/data_prep.yaml`.
+
+External Vad-R1 set (optional, used by `cosmos_v2`): download Vad-Reasoning-SFT from the official
+release (https://github.com/wbfwonderful/Vad-R1) into `dataset/external/vad_r1/`; without it the
+builder warns and produces the 41,844-record challenge-only corpus (`--skip-vad` to force).
 
 ### 2. Train the 3 fine-tuned models (each ~hours on H100; LoRA + merge)
 ```bash
 # f1 (primary open-ended generator, 128 frames, 7 open-ended tasks)
-bash training/qwen_sft/chain_27b_f1_128.sh       # -> checkpoints/qwen36_27b_f1_128 ; then training/qwen_sft/merge.py
+bash training/qwen_sft/chain_27b_f1_128.sh       # -> checkpoints/qwen36_27b_f1_128 (3655 steps, save every 400)
+python training/qwen_sft/merge.py checkpoints/qwen36_27b_f1_128/checkpoint-3600 \
+       checkpoints/qwen36_27b_f1_128_ck3600_merged        # ck3600 = the deployed checkpoint
 
 # cosmos_v2 (Cosmos3-Super SFT, all tasks, tiers S+A, 32 frames)
-bash training/cosmos_v2/train_sft.sh         # config training/cosmos_v2/configs/sft.yaml ; then merge_lora.py
+bash training/cosmos_v2/train_sft.sh --config training/cosmos_v2/configs/sft.yaml --deepspeed   # -> checkpoints/cosmos_sft
+python training/cosmos_v2/merge_lora.py --adapter checkpoints/cosmos_sft/checkpoint-3800 \
+       --out checkpoints/cosmos_sft_merged                # ck3800 = the deployed checkpoint
 
 # box-cue (Qwen3.6-27B on YOLO-boxed frames, bcq+mcq only, 64 frames; box_cue.py + YOLO box cache)
-bash training/qwen_sft/chain_27b_boxcue_64.sh   # -> checkpoints/qwen36_27b_bcqmcq_boxcue ; then training/qwen_sft/merge.py
+YOLO_CACHE_DIR=training/data/yolo_boxes python3 inference/detector_pass.py   # build the train-split box cache once
+bash training/qwen_sft/chain_27b_boxcue_64.sh   # -> checkpoints/qwen36_27b_bcqmcq_boxcue (600 steps)
+python training/qwen_sft/merge.py checkpoints/qwen36_27b_bcqmcq_boxcue/checkpoint-600 \
+       checkpoints/qwen36_27b_bcqmcq_boxcue_merged
+```
+
+### 2b. Or skip training: released checkpoints
+
+The three merged checkpoints are published on Hugging Face, so inference can be verified
+without retraining:
+
+| Model | Hugging Face |
+|---|---|
+| f1 | [AnHoang200901/aicity2026-track3-f1-qwen3.6-27b](https://huggingface.co/AnHoang200901/aicity2026-track3-f1-qwen3.6-27b) |
+| box-cue | [AnHoang200901/aicity2026-track3-boxcue-qwen3.6-27b](https://huggingface.co/AnHoang200901/aicity2026-track3-boxcue-qwen3.6-27b) |
+| cosmos_v2 | [AnHoang200901/aicity2026-track3-cosmos3-super-sft](https://huggingface.co/AnHoang200901/aicity2026-track3-cosmos3-super-sft) |
+
+Point the pipeline at them via env overrides (HF ids work anywhere a local path does):
+```bash
+export F1_MODEL=AnHoang200901/aicity2026-track3-f1-qwen3.6-27b
+export BOXCUE_MODEL=AnHoang200901/aicity2026-track3-boxcue-qwen3.6-27b
+export COSMOS_V2_MODEL=AnHoang200901/aicity2026-track3-cosmos3-super-sft
 ```
 
 ### 3. Inference -> submission
@@ -92,14 +143,15 @@ bash inference/steps/6_assemble_final.sh    # judge + open-ended MBR + 1-Yes-1-N
 Small deviations are expected: the pipeline regenerates everything, including the text judge's verdicts, and
 no ground-truth-derived file is shipped.
 
-## Method (see `docs/`)
+## Method (see the workshop paper)
 Cross-format cross-model vote (choice) · cross-task consistency check (text judge over own sibling answers) · grounding
 (inject temporal-loc phrasing/evidence into open-ended regen) · MBR-BERTScore medoid (descriptions) ·
 1-Yes-1-No pair-repair (bcq post-process, ON by default).
 
 ## Not shipped (must supply)
-Merged checkpoints (`checkpoints/*_merged`), base models (via HF_HOME), test videos + `test.json`
-(`dataset/official_test/`), YOLO weights. `training/data/merged_sft.jsonl` is regenerated by step 1.
+Base models (via HF_HOME), test videos + `test.json` (`dataset/official_test/`).
+Merged checkpoints are on Hugging Face (Sec. 2b) or retrainable via Sec. 2;
+`training/data/merged_sft.jsonl` is regenerated by step 1; YOLO weights auto-download.
 
 ## License
 Code: **MIT** (see `LICENSE`). The models and datasets it uses carry their own licenses

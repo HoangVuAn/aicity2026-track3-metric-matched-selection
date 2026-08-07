@@ -13,7 +13,7 @@ from peft import LoraConfig, PeftModel, get_peft_model
 from transformers import AutoProcessor, Qwen3VLConfig
 from transformers_cosmos3.model import Cosmos3ForConditionalGeneration
 
-from trainlib.paths import SNAP
+from trainlib.paths import require_snap
 
 # the processor logs a kwargs warning on EVERY call (video_metadata path); over a long
 # run that output flood can choke a backgrounded process -> silence transformers logging.
@@ -24,7 +24,7 @@ LORA_TARGETS = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", 
 
 
 def build_config() -> Qwen3VLConfig:
-    cd = json.load(open(SNAP + "/config.json"))
+    cd = json.load(open(require_snap() + "/config.json"))
     return Qwen3VLConfig(
         text_config=cd["text_config"], vision_config=cd["vision_config"],
         image_token_id=cd["image_token_id"], video_token_id=cd["video_token_id"],
@@ -34,14 +34,14 @@ def build_config() -> Qwen3VLConfig:
 
 
 def make_processor() -> AutoProcessor:
-    proc = AutoProcessor.from_pretrained(SNAP, trust_remote_code=True)
+    proc = AutoProcessor.from_pretrained(require_snap(), trust_remote_code=True)
     proc.video_processor.do_sample_frames = False  # we pre-sample frames ourselves
     return proc
 
 
 def load_base(device_map: str | None = "auto"):
     return Cosmos3ForConditionalGeneration.from_pretrained(
-        SNAP, config=build_config(), dtype=torch.bfloat16,
+        require_snap(), config=build_config(), dtype=torch.bfloat16,
         device_map=device_map, trust_remote_code=True)
 
 

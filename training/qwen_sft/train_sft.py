@@ -1,9 +1,9 @@
-"""Qwen3.6-27B (model_type qwen3_5) LoRA SFT, run in cosmos3_env (transformers 5.10.1 supports
+"""Qwen3.6-27B (model_type qwen3_5) LoRA SFT, run in the reproduction env (transformers 5.10.1 supports
 qwen3_5). Reuses the Cosmos data pipeline (cv2 frame extraction + tier-weighted records); only
 the model/processor are Qwen3.6. Single process, device_map=auto over the visible GPUs.
 
-  HF_HOME=/mnt/data/anhv10/hf_cache CUDA_VISIBLE_DEVICES=0,2 \
-    cosmos3_env/bin/python training/qwen_sft/train_sft.py --n-frames 16 --max-steps 600 --cot
+  HF_HOME=... CUDA_VISIBLE_DEVICES=0,1 \
+    python training/qwen_sft/train_sft.py --n-frames 16 --max-steps 600 --cot
 """
 
 from __future__ import annotations
@@ -155,7 +155,7 @@ def run_deepspeed(args) -> None:
 
 
 def load_data_jsonl(path: str, tasks: set[str]) -> list[json.loads]:
-    """Arbitrary jsonl corpus (e.g. temporal_mixed.jsonl): tier-dup like load_sft_records."""
+    """Arbitrary jsonl corpus passed via --data: tier-dup like load_sft_records."""
     recs = []
     for line in open(rel_to_repo(path)):
         r = json.loads(line)
@@ -312,7 +312,7 @@ def build_batch(proc, rec, n_frames, sampling, use_cot, device, adaptive_fps=0.0
                 budget_fill=False, base_frames=0, augment=False, no_snap=False, snap_nearest=False,
                 box_cue=False, window_sample=False):
     win = None
-    if "video_start" in rec:                          # tile record (temporal_tiles.jsonl)
+    if "video_start" in rec:                          # clip-window record (optional --data corpora)
         win = rec["video_end"] - rec["video_start"]
         n = n_frames if budget_fill else (adaptive_nframes(rec, adaptive_fps, n_frames)
                                           if adaptive_fps > 0 else n_frames)
@@ -380,7 +380,7 @@ def main() -> None:
     ap.add_argument("--output-dir", default="checkpoints/qwen36_sft")
     ap.add_argument("--deepspeed", action="store_true", help="multi-GPU DeepSpeed ZeRO-3 (accelerate launch)")
     ap.add_argument("--resume-from", default=None, help="clean-resume: dir with state_latest (model+opt+sched+step)")
-    ap.add_argument("--data", default=None, help="jsonl corpus override (e.g. training/data/temporal_mixed.jsonl)")
+    ap.add_argument("--data", default=None, help="optional jsonl corpus override (default: training/data/merged_sft.jsonl)")
     ap.add_argument("--adaptive-fps", type=float, default=0.0,
                     help="Qwen-native sampling: nframes = dur x fps (cap = --n-frames); 0 = fixed --n-frames")
     ap.add_argument("--raw-seconds", action="store_true",

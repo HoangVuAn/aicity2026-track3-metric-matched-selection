@@ -5,8 +5,9 @@ candidates from the fine-tuned models, votes across models and answer formats fo
 selects open-ended answers by MBR-BERTScore with per-task grounding. Final full-test mean **0.6696**
 (the competition's live leaderboard scored only a visible 50% subset, on which the same pipeline showed 0.6790).
 
-> Training (how the two checkpoints were produced) is documented separately; this package covers
-> **inference only** and treats the checkpoints as given.
+> Training (how the checkpoints are produced) lives in `../training/` with data prep in
+> `../data_prep/` (see the top-level README); this directory covers **inference** and treats
+> the merged checkpoints as given.
 
 ## 1. Requirements
 - 5 GPUs recommended (f1 on 2, cosmos_v2 on 2, judge on 1); fewer works if you shrink the GPU groups / run serially.

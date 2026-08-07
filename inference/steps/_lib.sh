@@ -16,4 +16,4 @@ wp(){ for t in $(seq 1 180); do [ "$(curl -s -o /dev/null -w '%{http_code}' http
 # kill OUR vLLM procs on the configured cards (G1/G2/G3) to free them between steps
 kg(){ for row in $(nvidia-smi --query-compute-apps=pid,gpu_uuid,used_memory --format=csv,noheader|awk -F', ' '$3+0>1000{print $1","$2}'); do
   p=$(echo $row|cut -d, -f1); u=$(echo $row|cut -d, -f2); idx=$(nvidia-smi --query-gpu=index,uuid --format=csv,noheader|grep "$u"|cut -d, -f1|tr -d ' ');
-  [ "$(ps -o user= -p $p 2>/dev/null|tr -d ' ')" = "anhv10" ] && echo "$idx"|grep -qE "^($G1|$G2|$G3)$" && kill -9 $p 2>/dev/null; done; sleep 8; }
+  [ "$(ps -o user= -p $p 2>/dev/null|tr -d ' ')" = "$USER" ] && echo "$idx"|grep -qE "^($G1|$G2|$G3)$" && kill -9 $p 2>/dev/null; done; sleep 8; }

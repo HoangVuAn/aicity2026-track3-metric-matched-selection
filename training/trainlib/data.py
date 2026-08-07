@@ -1,6 +1,6 @@
 """Video frame extraction, prompt encoding, and record loading for Cosmos SFT.
 
-torchcodec is broken in cosmos3_env, so we decode N frames with cv2 ourselves and pass a
+torchcodec is unreliable with this transformers pin, so we decode N frames with cv2 ourselves and pass a
 correct VideoMetadata (real fps + actual frames_indices) so the model still receives accurate
 native `<X seconds>` timestamp tokens — equivalent to native video sampling, leak-free.
 """
@@ -19,7 +19,7 @@ from trainlib.paths import MERGED_SFT, rel_to_repo
 
 TIER_DUP = {"S": 3, "A": 2, "B": 1}  # tier-weighting via record duplication
 # UniTime-style sequence hint for temporal grounding; must match between training data
-# (prep_temporal_tiles.py) and any inference on a model trained with it.
+# and any inference on a model trained with it.
 TS_HINT = ("This is a video sequence interleaved with timestamps and frames. Identify the "
            "temporal window (start and end timestamps) when the queried event occurs.")
 ALL_TASKS = {"bcq", "mcq", "bcq_openended", "mcq_openended", "open_qa", "causal_linkage",
