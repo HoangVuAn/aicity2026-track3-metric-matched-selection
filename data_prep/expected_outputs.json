@@ -2,10 +2,54 @@
   "training/data/merged_sft.jsonl": {
     "sha256": "30d55b0f2e8f6f0d9f0c94076e5197df950aece8a971fb939de8e0c57bcf53ca",
     "records": 44413,
-    "by_source": {"challenge": 41844, "vad": 2569},
-    "by_tier": {"S": 14256, "A": 20881, "B": 9276},
+    "by_source": {
+      "challenge": 41844,
+      "vad": 2569
+    },
+    "by_tier": {
+      "S": 14256,
+      "A": 20881,
+      "B": 9276
+    },
     "note": "Byte-for-byte deterministic given the official challenge data + Vad-Reasoning-SFT. Without Vad-R1 (--skip-vad) the corpus is the 41,844 challenge records only."
   },
-  "dataset/processed/train.jsonl": {"records": 41844},
-  "dataset/processed/val.jsonl": {"records": 2196}
+  "dataset/processed/train.jsonl": {
+    "records": 41844
+  },
+  "dataset/processed/val.jsonl": {
+    "records": 2196
+  },
+  "inference milestones (test set, from the verified clean-env run)": {
+    "step1 inference/full_run/yolo_boxes/": {
+      "json_files": 3750,
+      "note": "train+val+test videos; 64 uniform frames each"
+    },
+    "step2 vote pools": {
+      "cosmos_votetta.json": 480,
+      "cosmos_v2_votetta.json": 480,
+      "boxcue_votetta.json": 240,
+      "gen_f1_oe.json": 240
+    },
+    "step3 richpool": {
+      "mbr_test.json": 400,
+      "mbr_test_cosmos.json": 400,
+      "note": "480 test items minus non-MBR tasks"
+    },
+    "step4 submission_clean_repro.csv": {
+      "rows": 960,
+      "empty": 0
+    },
+    "step5 grounding": {
+      "locevent_temporal_test.json": 80,
+      "summ_fullevent_test.json": 80,
+      "summco_test.json": 80,
+      "evidence_test.json": 274
+    },
+    "step6 submission_repro.csv": {
+      "rows": 960,
+      "empty": 0,
+      "deterministic_branches": "bcq/mcq/temporal_localization predictions reproduce exactly across reruns; open-ended text differs (resampled pools) with score within ~0.01",
+      "bcq_votepool.json": 160
+    }
+  }
 }

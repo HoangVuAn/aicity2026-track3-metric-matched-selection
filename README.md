@@ -121,6 +121,9 @@ bash inference/run_full_fast.sh             # PAIR_REPAIR=1 default; 3 GPUs; ~4-
 # -> dataset/official_test/submission_repro.csv
 ```
 All model paths / frame counts / sampling N / GPUs in `inference/config.sh`.
+Every stage is resume-safe (cached under `inference/full_run/`), so reruns skip finished work;
+`data_prep/expected_outputs.json` also lists the expected item counts per step for mid-pipeline
+sanity checks.
 
 Or run it phase by phase (same flow, one script per phase; see `inference/steps/README.md`):
 ```bash
