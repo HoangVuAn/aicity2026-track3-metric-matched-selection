@@ -123,7 +123,11 @@ bash inference/run_full_fast.sh             # PAIR_REPAIR=1 default; 3 GPUs; ~4-
 All model paths / frame counts / sampling N / GPUs in `inference/config.sh`.
 Every stage is resume-safe (cached under `inference/full_run/`), so reruns skip finished work;
 `data_prep/expected_outputs.json` also lists the expected item counts per step for mid-pipeline
-sanity checks.
+sanity checks. Reference intermediate artifacts from our verified run (vote pools, candidate
+pools, grounding generations, submissions — model outputs only, no challenge content) are on
+Hugging Face: [AnHoang200901/aicity2026-track3-artifacts](https://huggingface.co/datasets/AnHoang200901/aicity2026-track3-artifacts) —
+drop them into `inference/full_run/` to experiment with the selection/assembly stages without
+re-running generation.
 
 Or run it phase by phase (same flow, one script per phase; see `inference/steps/README.md`):
 ```bash
