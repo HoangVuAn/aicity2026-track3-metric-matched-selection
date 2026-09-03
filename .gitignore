@@ -50,3 +50,4 @@ docs/paper/EXPERIMENTS_val_plan.md
 docs/
 training/data/yolo_boxes/
 wandb/
+inference/full_run_compliant/

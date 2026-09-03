@@ -139,16 +139,34 @@ bash inference/steps/5_grounding.sh         # re-serve f1 -> locevent / full-eve
 bash inference/steps/6_assemble_final.sh    # judge + open-ended MBR + 1-Yes-1-No -> submission_repro.csv
 ```
 
-## Expected result on rerun (no baked artifacts; `seed=0`)
-| Component | Rerun |
-|---|---|
-| choice (bcq vote, mcq, mcq_oe, bcq_oe stance) | reproduces exactly |
-| open-ended (5 desc + open_qa, MBR-BERTScore) | ±0.01 (medoid sampling) |
-| bcq pair-repair (1-Yes-1-No) | bcq **0.9625** on the full test |
-| **overall** | **~0.66–0.67** (submitted 0.6696) |
+### 3b. Compliant run (all-task-trained models only, no pair repair)
 
-Small deviations are expected: the pipeline regenerates everything, including the text judge's verdicts, and
-no ground-truth-derived file is shipped.
+A second run mode, added for the Track 3 award review: selection is restricted to models
+fine-tuned across *all* TAR tasks (`cosmos_v2`) plus the zero-shot `nvidia/Cosmos3-Super`, and the
+1-Yes-1-No pair repair and the cross-task consistency judge are left out.
+
+```bash
+G1=1 G2=2 bash inference/run_compliant.sh   # -> dataset/official_test/submission_compliant_dedup.csv
+```
+
+Nine-task mean **0.6477** on the official test set; **0.6520** with `--pair-repair` re-enabled.
+
+## Expected result on rerun (no baked artifacts; `seed=0`)
+| Component | Rerun (measured on the official test set) |
+|---|---|
+| mcq | reproduces exactly (80/80 identical to the submitted file) |
+| bcq (vote + 1-Yes-1-No repair) | **0.9250**; the submitted file scored 0.9625 — see the note below |
+| mcq_oe | 76/80 identical; small tie-break differences |
+| open-ended (5 desc + open_qa + bcq_oe, MBR-BERTScore) | text differs run to run (medoid over a resampled pool); score within ~0.01 |
+| **overall** | **~0.66**, the open-ended half being resampled each run (submitted file: 0.6696) |
+
+Two numbers, two things. The leaderboard submission scored **0.6696** overall (0.9625 on binary QA);
+it was assembled by hand, and its pair-repair step took the flip direction from artifacts of an
+earlier pipeline — a cross-task consistency pass and a separate larger-N vote pool — that are not
+part of this repository. This self-contained pipeline reproduces binary QA deterministically at
+0.9250 and lands around 0.66 overall, the open-ended tasks being resampled on every run; every
+artifact is regenerated from the checkpoints, including the text judge's verdicts, and no
+ground-truth-derived file is shipped.
 
 ## Method (see the workshop paper)
 Cross-format cross-model vote (choice) · cross-task consistency check (text judge over own sibling answers) · grounding
